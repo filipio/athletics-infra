@@ -1,0 +1,3 @@
+users:
+  - username: admin
+    public_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDQ0D04ovRJTcy/34fz1l4LmYw8N3ehWoUO/XeM5Scp+ filip@Pikachu"

@@ -1,0 +1,49 @@
+- name: Create users
+  hosts: lekkoatletawka
+  become: yes
+  vars_files:
+    - users.yml
+
+  tasks:
+    - name: Check if sudo group exists
+      command: getent group sudo
+      register: sudo_group
+      ignore_errors: yes
+
+    - name: Create sudo group if it does not exist
+      group:
+        name: sudo
+        state: present
+      when: sudo_group.rc != 0
+
+    - name: Create users
+      user:
+        name: "{{ item.username }}"
+        shell: /bin/bash
+        create_home: yes
+      loop: "{{ users }}"
+
+    - name: Add users to sudo group
+      user:
+        name: "{{ item.username }}"
+        groups: sudo
+        append: yes
+      loop: "{{ users }}"
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "/home/{{ item.username }}/.ssh"
+        state: directory
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        mode: "0700"
+      loop: "{{ users }}"
+
+    - name: Set up authorized keys
+      copy:
+        content: "{{ item.public_key }}"
+        dest: "/home/{{ item.username }}/.ssh/authorized_keys"
+        owner: "{{ item.username }}"
+        group: "{{ item.username }}"
+        mode: "0600"
+      loop: "{{ users }}"
