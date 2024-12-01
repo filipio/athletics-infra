@@ -41,7 +41,7 @@ resource "digitalocean_droplet" "lekkoatletawka" {
 }
 
 resource "digitalocean_domain" "lekkoatletawka" {
-  name       = "lekkoatletawka.com"
+  name       = "lekkoatletawka.pl"
   ip_address = digitalocean_droplet.lekkoatletawka.ipv4_address
 }
 

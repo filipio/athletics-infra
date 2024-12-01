@@ -1,0 +1,21 @@
+# todo: setup nginx with certbot
+- name: Setup Nginx with Certbot
+  hosts: lekkoatletawka
+  become: yes
+
+  vars:
+    domain_name: lekkoatletawka.pl
+    email: your_email@example.com
+
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Start and enable Nginx
+      systemd:
+        name: nginx
+        state: started
+        enabled: yes
