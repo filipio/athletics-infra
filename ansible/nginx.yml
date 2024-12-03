@@ -1,11 +1,10 @@
-# todo: setup nginx with certbot
 - name: Setup Nginx with Certbot
   hosts: lekkoatletawka
   become: yes
 
   vars:
     domain_name: lekkoatletawka.pl
-    email: your_email@example.com
+    email: Filip.Juza.2000@gmail.com
 
   tasks:
     - name: Install Nginx
@@ -19,3 +18,48 @@
         name: nginx
         state: started
         enabled: yes
+
+    - name: Ensure Certbot is installed
+      apt:
+        name: certbot
+        state: present
+        update_cache: yes
+
+    - name: Install Nginx plugin for Certbot
+      apt:
+        name: python3-certbot-nginx
+        state: present
+        update_cache: yes
+
+    - name: Obtain SSL certificate for the domain
+      command: >
+        certbot --nginx
+        -n --agree-tos --email {{ email }}
+        -d {{ domain_name }} -d www.{{ domain_name }}
+      args:
+        creates: /etc/letsencrypt/live/{{ domain_name }}/fullchain.pem
+
+    - name: Configure Nginx as a reverse proxy
+      template:
+        src: files/nginx_config.j2
+        dest: /etc/nginx/sites-available/{{ domain_name }}
+      notify: Restart Nginx
+
+    - name: Enable Nginx site
+      file:
+        src: /etc/nginx/sites-available/{{ domain_name }}
+        dest: /etc/nginx/sites-enabled/{{ domain_name }}
+        state: link
+      notify: Restart Nginx
+
+    - name: Remove default Nginx configuration
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

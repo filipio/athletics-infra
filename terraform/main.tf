@@ -9,6 +9,7 @@ terraform {
 
 # Set the variable value in *.tfvars file
 # or using -var="do_token=..." CLI option
+# TODO: store the token in a secure way
 variable "do_token" {
   default = "do_token"
 }
@@ -43,6 +44,13 @@ resource "digitalocean_droplet" "lekkoatletawka" {
 resource "digitalocean_domain" "lekkoatletawka" {
   name       = "lekkoatletawka.pl"
   ip_address = digitalocean_droplet.lekkoatletawka.ipv4_address
+}
+
+resource "digitalocean_record" "www" {
+  domain = digitalocean_domain.lekkoatletawka.name
+  type   = "CNAME"
+  name   = "www"
+  value  = "${digitalocean_domain.lekkoatletawka.name}." # trailing dot is required
 }
 
 output "droplet_ipv4_addresses" {
