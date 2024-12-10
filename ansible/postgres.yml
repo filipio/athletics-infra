@@ -1,0 +1,100 @@
+---
+- name: Setup PostgreSQL
+  hosts: all
+  become: yes
+
+  vars_files:
+  - files/secrets.yml
+  vars:
+    postgresql_version: "17"
+    postgresql_conf_dir: "/etc/postgresql/{{ postgresql_version }}/main"
+    postgresql_cluster: "{{ postgresql_version }} main"
+
+
+  tasks:
+    - name: Import PostgreSQL GPG key
+      command: >
+        wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc > /etc/apt/trusted.gpg.d/ACCC4CF8.asc
+      args:
+        creates: /etc/apt/trusted.gpg.d/ACCC4CF8.asc
+
+    - name: Ensure PostgreSQL repository is added
+      apt_repository:
+        repo: "deb http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main"
+        state: present
+        filename: "pgdg.list"
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+
+    - name: Install PostgreSQL
+      apt:
+        name: "postgresql-{{ postgresql_version }}"
+        state: latest
+
+    - name: Stop PostgreSQL cluster (if running)
+      shell: >
+        pg_ctlcluster {{ postgresql_cluster }} stop || true
+
+    - name: Copy custom postgresql.conf
+      copy:
+        src: files/postgresql.conf
+        dest: "{{ postgresql_conf_dir }}/postgresql.conf"
+        owner: postgres
+        group: postgres
+        mode: 0644
+
+    - name: Copy custom pg_hba.conf
+      copy:
+        src: files/pg_hba.conf
+        dest: "{{ postgresql_conf_dir }}/pg_hba.conf"
+        owner: postgres
+        group: postgres
+        mode: 0644
+
+    - name: Start PostgreSQL cluster
+      command: >
+        pg_ctlcluster {{ postgresql_cluster }} start
+
+    - name: Ensure PostgreSQL service is enabled at boot
+      service:
+        name: postgresql
+        enabled: yes
+
+    - name: Install psycopg2
+      apt:
+        name: python3-psycopg2
+        state: latest
+
+    - name: Install setfacl
+      apt:
+        name: acl
+        state: latest
+
+    - name: Create user
+      become: yes
+      become_user: postgres
+      community.postgresql.postgresql_user:
+        name: "{{ db_user }}"
+        password: "{{ db_password }}"
+        state: present
+
+    - name: Create database
+      become: yes
+      become_user: postgres
+      community.postgresql.postgresql_db:
+        name: "{{ db_name }}"
+        state: present
+        owner: "{{ db_user }}"
+
+    - name: Grant privs
+      become: yes
+      become_user: postgres
+      community.postgresql.postgresql_privs:
+        database: "{{ db_name }}"
+        state: present
+        privs: ALL
+        type: database
+        roles: "{{ db_user }}"
+        grant_option: true
