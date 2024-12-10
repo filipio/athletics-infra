@@ -7,14 +7,12 @@ terraform {
   }
 }
 
-# Set the variable value in *.tfvars file
-# or using -var="do_token=..." CLI option
-# TODO: store the token in a secure way
 variable "do_token" {
-  default = "do_token"
+  description = "DigitalOcean API token"
+  type        = string
+  sensitive   = true
 }
 
-# Configure the DigitalOcean Provider
 provider "digitalocean" {
   token = var.do_token
 }
