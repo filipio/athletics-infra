@@ -13,7 +13,7 @@
 
   tasks:
     - name: Import PostgreSQL GPG key
-      command: >
+      shell: >
         wget -qO- https://www.postgresql.org/media/keys/ACCC4CF8.asc > /etc/apt/trusted.gpg.d/ACCC4CF8.asc
       args:
         creates: /etc/apt/trusted.gpg.d/ACCC4CF8.asc

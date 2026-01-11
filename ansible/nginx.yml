@@ -3,7 +3,7 @@
   become: yes
 
   vars:
-    domain_name: lekkoatletawka.pl
+    domain_name: lekkoatletawka.eu
     email: Filip.Juza.2000@gmail.com
 
   tasks:

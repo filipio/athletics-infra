@@ -19,7 +19,7 @@ provider "digitalocean" {
 
 locals {
   ssh_keys = {
-    "admin" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvSGrF8FBMPvr1OlzqvjPQnFbbtA6+7HLGKygRULT3A filip@Pikachu"
+    "admin" = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIONqH69HVrisJAFIbNq5ZltlDWvkXXGpDR3En8I671l/ filip.juza.2000@gmail.com"
   }
 }
 
